@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhillyHarper Portfolio</title>
+    <link href="/output.css" rel="stylesheet">
+    <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
+</head>
+
+<body class="text-white bg-black">
+
+    <!-- Header -->
+    <header class="flex flex-row w-full justify-between py-6 text-center text-5xl font-extralight text-white">
+        <div class="px-4">PHIL HARPER</div>
+        <button class="rounded bg-gray-900 px-4 py-2 font-bold text-white hover:bg-gray-800" _="
+                    on click toggle .hidden on #nav-menu">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="h-6 w-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+        </button>
+    </header>
+
+    <!-- Navigation -->
+    <!-- Navigation -->
+    <nav id="nav-menu" class="hidden text-center text-white font-light mb-10">
+        <ul class="mt-4 flex flex-col space-y-4">
+            <li><a href="#film" class=" hover:text-purple-300">More soon....</a></li>
+            <!-- <li><a href="#journalism" class=" hover:text-purple-300">Journalism</a></li>
+                <li><a href="#books" class=" hover:text-purple-300">Books</a></li>
+                <li><a href="#podcasts" class=" hover:text-purple-300">Podcasts</a></li>
+                <li><a href="#vr" class=" hover:text-purple-300">Virtual Reality</a></li>
+                <li><a href="#ai" class=" hover:text-purple-300">AI</a></li> -->
+        </ul>
+    </nav>
+
+    <!-- Content sections -->
+    <div id="sections" class="text-2xl font-light text-center mb-10">
+        <section class="py-10">
+            <div class="flex flex-col items-center w-5/6 lg:w-1/2 mx-auto" id="film">
+                <p class="text-sm font-extralight">Creative technologist with over 10 years experience at the
+                    intersection of storytelling,
+                    technology and audience engagement. Skilled in directing and producing award-winning virtual
+                    reality (VR), digital journalism, and immersive content across mulitple platforms. Self taught
+                    and fluent in Python programming with a focus on experimental AI and data projects.</p>
+                <div id="game" class="p-10">
+                    <script src="cvgame.js"></script>
+                </div>
+            </div>
+        </section>
+        <section class="py-4">
+            <a href="/phil-harper-cv.pdf" download
+                class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-lg rounded-full shadow-sm text-white bg-gray-900 hover:bg-gray-800">
+                phil-harper-cv.pdf
+            </a>
+        </section>
+
+    </div>
+</body>

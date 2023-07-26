@@ -27,7 +27,7 @@ function preload() {
     bgImage = loadImage('/images/startscreen.png');
     gameImage = loadImage('/images/gamescreen.png');
     spaceShipSprite = loadImage("/images/spaceship.png");
-    logo = loadImage('/images/shooter.png')
+    logo = loadImage('/images/spacevitae.png')
     instructions = loadImage('/images/instructions.png')
     bulletSound = loadSound('/images/laser.mp3');
 
@@ -97,8 +97,8 @@ function loadScreen() {
     textSize(24);
     fill(255);
     textAlign(CENTER, CENTER);
-    image(logo, width / 6, height / 4, 300, 300);
-    image(instructions, width / 3.6, height / 1.2, 200, 200);
+    image(logo, width / 12, height / 3, 350, 60);
+    image(instructions, width / 8, height / 1.2, 300, 50);
 
     // text('Click then', width / 2, height / 1.2);
     // text('press space or tap to start', width / 2, height / 1.2 + 50);

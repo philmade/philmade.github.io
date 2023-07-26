@@ -21,6 +21,7 @@ let canvasWidth, canvasHeight;
 let bulletSound;
 let score = 0;
 let canvas
+let gameOver = false;
 
 function preload() {
 
@@ -78,10 +79,12 @@ function draw() {
     if (!gameStarted) {
         // displayWinScreen()
         loadScreen()
+    } else if (gameOver) {
+        // Display game over screen
+        displayLoseScreen();
     } else {
         updateAndDisplaySpaceship();
         checkEndGameOrContinue();
-
     }
 }
 
@@ -149,9 +152,14 @@ function updateAndDisplayGameObjects() {
 }
 
 function updateAndDisplayTextBlocks() {
-    for (let textBlock of texts) {
-        textBlock.update();
-        textBlock.show();
+    for (let i = texts.length - 1; i >= 0; i--) {
+        texts[i].update();
+        texts[i].show();
+        if (texts[i].checkCollision(player)) {
+            console.log('Collision detected!');
+            gameOver = true;
+            break;
+        }
     }
 }
 
@@ -217,12 +225,13 @@ function updateAndDisplayParticles() {
 
 function displayWinScreen() {
     background(bgImage);
-    textSize(32);
+    textSize(24);
     fill(255);
     textAlign(CENTER, CENTER);
-    text('You win!', width / 2, height / 4);
-    text('Score: ' + score, width / 2, height / 2);
-    text('Email phil@imrge.co!', width / 2, height / 2.5);
+    image(logo, width / 12, height / 3, 350, 60);
+    text('You win!', width / 2, height / 1.5);
+    text('Score: ' + score, width / 2, height / 1.4);
+    text('Shoot me an email phil@imrge.co', width / 2, height / 1.3);
 
     // Get the position of the canvas
     let canvasPos = canvas.position();
@@ -254,6 +263,33 @@ function restartGame() {
 
     // Restart the draw loop
     loop();
+}
+
+function displayLoseScreen() {
+    background(bgImage);
+    textSize(24);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    image(logo, width / 12, height / 3, 350, 60);
+    text('You lost!', width / 2, height / 1.5);
+    text('Score: ' + score, width / 2, height / 1.4);
+    text('Shoot me an email phil@imrge.co', width / 2, height / 1.3);
+
+    // Get the position of the canvas
+    let canvasPos = canvas.position();
+
+    // Create a "Play Again" button
+    replayButton = createButton('Play Again');
+    // Set the button's position relative to the canvas
+    replayButton.position(canvasPos.x + width / 3, canvasPos.y + height / 1.2);
+    replayButton.mousePressed(restartGame);
+    replayButton.style('font-size', '23px');
+    replayButton.style('color', '#EDEDED');
+    replayButton.style('background-color', '#F59D05');
+    replayButton.style('padding', '10px');
+
+    noLoop()
+    gameOver = false;
 }
 
 function mousePressed() {
@@ -306,6 +342,8 @@ class Spaceship {
         this.spriteWidth = this.size;
         this.spriteHeight = this.size / 0.73;
         this.bulletSound = bulletSound;
+        this.r = min(this.spriteWidth, this.spriteHeight) / 2;
+
     }
 
     update() {
@@ -383,6 +421,7 @@ class TextBlock {
         this.textColor = color(0);  // Start with white color
         this.headerColor = color(255, 105, 180);  // Pink color
         this.backgroundAlpha = 255;  // Start with fully opaque background
+        this.r = min(this.width, this.height) / 2;
     }
 
     update() {
@@ -419,6 +458,11 @@ class TextBlock {
         } else {
             return false;
         }
+    }
+
+    checkCollision(spaceship) {
+        let d = dist(this.x + this.width / 2, this.y + this.height / 2, spaceship.x + spaceship.spriteWidth / 2, spaceship.y + spaceship.spriteHeight / 2);
+        return (d < this.r + spaceship.r);
     }
 }
 class Particle {

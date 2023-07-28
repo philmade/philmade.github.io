@@ -4,11 +4,12 @@ let bullets = [];
 let bulletChars = ["P", "H", "I", "L", "*", "I", "S", "*", "T", "H", "E", "*", "O", "N", "E", "*"];
 let bulletIndex = 0;
 let documentTexts = [
-    { header: "Phil Harper", content: "Creative technologist with over 10 years experience at the intersection of storytelling, technology and audience engagement. \n\n Skilled in directing and producing award-winning virtual reality, digital journalism, and immersive content across mulitple platforms. \n\n Self taught and fluent in Python programming with a focus on experimental AI and data projects." },
-    { header: "Web3, AI, VR & Python", content: "Launched case.science, an AI-powered social network exploring perspectives on news stories using LLMs.\n\n Built 4+ full-stack experimental AI projects in 6 months applying techniques like web scraping, data analysis, and visualization with Python, HTML, Javascript and hyperscript" },
-    { header: "Founder, The Digger", content: "Writer and producer of substack series on pharmaceutical industry conflicts of interest with over 16k subscribers and 50% MoM growth in early months" },
-    { header: "BBC Director and Producer", content: "Directed two award-winning VR films, including interactive educational piece '1942 Berlin Blitz' \n\n Innovated and produced a new VR journalism format for BBC World Service across Congo, Sudan, Egypt and Ethiopia \n\n Helped establish BBC's capabilities in VR storytelling across content verticals" },
-    { header: "Atlantic Productions - Head of Digital", content: "Directed BAFTA award-winning VR with Sir David Attenborough, 'David Attenborough's Great Barrier Reef' \n\n Built Alchemy VR, a specialist VR production company, from the ground up \n\n Launched Atlantic's digital video production division Atlantic Digital" },
+    { header: "Phil Harper", content: "A BAFTA award-winning creative technologist with over 10 years of experience at the intersection of storytelling, technology and audience engagement. Skilled in directing and producing award-winning virtual reality, digital, and immersive content across multiple platforms. Self-taught and fluent in Python programming with a focus on experimental AI and data-led storytelling projects." },
+    { header: "Web3, AI & Python", content: "Launched case.science, an AI-powered social network exploring perspectives on news stories using LLMs.\n\n Built several full-stack experimental AI projects, applying techniques like web scraping, data analysis, and visualization with Python, HTML, Javascript and hyperscript" },
+    { header: "VR Director", content: "Co-directed one of the most commercially successful VR films of all time, The Antarctica Experience, which became an onsight VR exhibit across Australian museums" },
+    // { header: "Founder, The Digger", content: "Writer and producer of substack series on pharmaceutical industry conflicts of interest with over 16k subscribers and 50% MoM growth in early months" },
+    { header: "BBC Director and Producer", content: "Directed two award-winning VR films, '1942 Berlin Blitz' and 'Damming the Nile' \n\n Innovated and produced a new VR journalism format for BBC World Service across Congo, Sudan, Egypt and Ethiopia \n\n Helped establish BBC's capabilities in VR storytelling across content verticals" },
+    { header: "Atlantic Productions - Head of Digital", content: "Co-directed BAFTA award-winning VR with Sir David Attenborough, 'David Attenborough's Great Barrier Reef' \n\n Produced First Life VR, also with Sir David Attenborough, and also showing at the Natural History Museum in London. \n\n Built Alchemy VR, a specialist VR production company at Atlantic Productions \n\n" },
     { header: "ITN Productions - Head of New Audiences", content: "Grew new online channel from 0 to 600k subscribers in 12 months \n\n Established data-driven approach to digital content and audience growth \n\n On-screen presenting talent." },
     { header: "Awards", content: "BAFTA - 2017 \n\n Rose d’Or - 2018 \n\n Broadcast Digital - 2019" }
 ];
@@ -415,7 +416,7 @@ class TextBlock {
         this.height = 300;  // Set a fixed height for the block
         this.x = random(0, canvasWidth - this.width);
         this.y = 0;
-        this.speed = 1;
+        this.speed = random(0.5, 0.8);
         this.hits = 0;
         this.maxHits = Math.floor(random(6, 12));
         this.textColor = color(0);  // Start with white color

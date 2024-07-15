@@ -57,11 +57,15 @@
                     across multiple platforms. Self-taught and fluent in Python programming with a focus on experimental
                     AI and data-led storytelling projects. Highly proficient in Premier Pro, Mistika VR and
                     InstaPro360 software.</p>
-                <div id="game" class="p-10">
-                    <script src="cvgame.js"></script>
-                </div>
+                <button id="startGameButton" class="mt-4 px-4 py-2 bg-cyan-500 text-white rounded-full">Start
+                    Game</button>
             </div>
         </section>
+        <div id="gameContainer" class="fixed inset-0 z-50 bg-black hidden">
+            <div id="game" class="w-full h-full"></div>
+            <button id="exitGameButton" class="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white rounded-full">Exit
+                Game</button>
+        </div>
         <section class="py-4">
             <a href="/phil-harper-cv.pdf" download
                 class="inline-flex items-center px-4 py-2 border border-transparent font-medium text-lg rounded-full shadow-sm text-white bg-cyan-500 hover:bg-cyan-600">

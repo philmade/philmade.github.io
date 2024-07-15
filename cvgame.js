@@ -23,6 +23,33 @@ let bulletSound;
 let score = 0;
 let canvas
 let gameOver = false;
+let gameContainer, startGameButton, exitGameButton;
+
+function initializeGameControls() {
+    gameContainer = document.getElementById('gameContainer');
+    startGameButton = document.getElementById('startGameButton');
+    exitGameButton = document.getElementById('exitGameButton');
+
+    startGameButton.addEventListener('click', startGame);
+    exitGameButton.addEventListener('click', exitGame);
+}
+
+function startGame() {
+    gameContainer.classList.remove('hidden');
+    resizeCanvas(windowWidth, windowHeight);
+    loop();
+    gameStarted = false;  // Reset game state
+    startBackgroundMusic();
+}
+
+function exitGame() {
+    gameContainer.classList.add('hidden');
+    noLoop();
+    backgroundMusic.stop();
+}
+
+// Call this function after your p5.js setup
+window.addEventListener('load', initializeGameControls);
 
 function preload() {
 
@@ -34,7 +61,6 @@ function preload() {
     bulletSound = loadSound('/images/laser.mp3');
     backgroundMusic = loadSound('images/pulse.mp3');
 }
-
 
 
 

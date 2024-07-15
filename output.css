@@ -58,10 +58,20 @@ html {
 */
 
 body {
-  margin: 0;
-  /* 1 */
-  line-height: inherit;
-  /* 2 */
+  overflow: auto;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+#gameContainer {
+  position: relative;
+  width: 100%;
+  height: auto;
+  background-color: black;
+}
+#game {
+  width: 100%;
+  height: 100%;
 }
 
 /*

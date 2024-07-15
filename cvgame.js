@@ -23,29 +23,46 @@ let bulletSound;
 let score = 0;
 let canvas
 let gameOver = false;
-let gameContainer, startGameButton, exitGameButton;
+let gameContainer, startGameButton, exitGameButton, fullscreenButton;
 
 function initializeGameControls() {
     gameContainer = document.getElementById('gameContainer');
     startGameButton = document.getElementById('startGameButton');
     exitGameButton = document.getElementById('exitGameButton');
+    fullscreenButton = document.getElementById('fullscreenButton');
 
     startGameButton.addEventListener('click', startGame);
     exitGameButton.addEventListener('click', exitGame);
+    fullscreenButton.addEventListener('click', toggleFullscreen);
+
+    if (isMobile()) {
+        fullscreenButton.classList.remove('hidden');
+    }
 }
 
 function startGame() {
     gameContainer.classList.remove('hidden');
     resizeCanvas(windowWidth, windowHeight);
     loop();
-    gameStarted = false;  // Reset game state
+    gameStarted = true;  // Set gameStarted to true
     startBackgroundMusic();
+    player = new Spaceship(bulletSound);  // Initialize the player
 }
 
 function exitGame() {
     gameContainer.classList.add('hidden');
     noLoop();
     backgroundMusic.stop();
+}
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        gameContainer.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
 }
 
 // Call this function after your p5.js setup
@@ -69,17 +86,17 @@ function setup() {
         canvasWidth = windowWidth;
         canvasHeight = windowHeight;
     } else {
-        // Maximum width is 800 pixels
         canvasWidth = min(windowWidth, 400);
-        // Maintain 1:2 aspect ratio
         canvasHeight = min(windowHeight, canvasWidth * 2);
     }
+
     canvas = createCanvas(canvasWidth, canvasHeight);
     canvas.parent('game');
-    canvas.style('display', 'block');
-    canvas.style('margin', 'auto');
+
     if (!isMobile()) {
-        // Create volume slider only for non-mobile devices
+        canvas.style('display', 'block');
+        canvas.style('margin', 'auto');
+
         let sliderContainer = createDiv('');
         sliderContainer.position(10, height - 40);
         sliderContainer.style('display', 'flex');
@@ -95,12 +112,11 @@ function setup() {
         volumeSlider.style('width', '80px');
         volumeSlider.parent(sliderContainer);
     }
+
     bgY1 = 0;
     bgY2 = -height;
     player = new Spaceship(bulletSound);
-
 }
-
 function draw() {
     // Calculate the width and height to draw the image
     let imgWidth = width;

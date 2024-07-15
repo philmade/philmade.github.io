@@ -3,20 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <style>
-        body {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phil Harper - Portfolio</title>
     <link href="/output.css" rel="stylesheet">
     <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js">
+    </script>
+    <script src="cvgame.js"></script>
 </head>
 
 <body class="text-white bg-black">
@@ -34,7 +28,6 @@
         </button>
     </header>
 
-    <!-- Navigation -->
     <!-- Navigation -->
     <nav id="nav-menu" class="hidden text-center text-white font-light mb-10">
         <ul class="mt-4 flex flex-col space-y-4 mx-auto">
@@ -61,10 +54,13 @@
                     Game</button>
             </div>
         </section>
-        <div id="gameContainer" class="fixed inset-0 z-50 bg-black hidden">
-            <div id="game" class="w-full h-full"></div>
+        <div id="gameContainer">
+            <div id="game"></div>
             <button id="exitGameButton" class="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white rounded-full">Exit
                 Game</button>
+            <button id="fullscreenButton"
+                class="absolute bottom-4 right-4 px-4 py-2 bg-blue-500 text-white rounded-full hidden">Full
+                Screen</button>
         </div>
         <section class="py-4">
             <a href="/phil-harper-cv.pdf" download
@@ -72,6 +68,6 @@
                 Get my CV
             </a>
         </section>
-
     </div>
+    <script>window.addEventListener('load', initializeGameControls);</script>
 </body>

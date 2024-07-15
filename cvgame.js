@@ -39,35 +39,39 @@ function preload() {
 
 
 function setup() {
-    // Maximum width is 800 pixels
-    canvasWidth = min(windowWidth, 400);
-    // Maintain 1:2 aspect ratio
-    canvasHeight = min(windowHeight, canvasWidth * 2);
+    if (isMobile()) {
+        canvasWidth = windowWidth;
+        canvasHeight = windowHeight;
+    } else {
+        // Maximum width is 800 pixels
+        canvasWidth = min(windowWidth, 400);
+        // Maintain 1:2 aspect ratio
+        canvasHeight = min(windowHeight, canvasWidth * 2);
+    }
     canvas = createCanvas(canvasWidth, canvasHeight);
-
-    bgY1 = 0;
-    bgY2 = -height;
-    player = new Spaceship(bulletSound);
     canvas.parent('game');
     canvas.style('display', 'block');
     canvas.style('margin', 'auto');
-    // Create a container div for the slider and label
-    let sliderContainer = createDiv('');
-    sliderContainer.position(10, height - 40);
-    sliderContainer.style('display', 'flex');
-    sliderContainer.style('align-items', 'center');
-    sliderContainer.parent('game');
+    if (!isMobile()) {
+        // Create volume slider only for non-mobile devices
+        let sliderContainer = createDiv('');
+        sliderContainer.position(10, height - 40);
+        sliderContainer.style('display', 'flex');
+        sliderContainer.style('align-items', 'center');
+        sliderContainer.parent('game');
 
-    // Create and style the label
-    let volumeLabel = createSpan('Volume: ');
-    volumeLabel.style('color', 'white');
-    volumeLabel.style('margin-right', '10px');
-    volumeLabel.parent(sliderContainer);
+        let volumeLabel = createSpan('Volume: ');
+        volumeLabel.style('color', 'white');
+        volumeLabel.style('margin-right', '10px');
+        volumeLabel.parent(sliderContainer);
 
-    // Create and style the slider
-    volumeSlider = createSlider(0, 1, 0.5, 0.1);
-    volumeSlider.style('width', '80px');
-    volumeSlider.parent(sliderContainer);
+        volumeSlider = createSlider(0, 1, 0.5, 0.1);
+        volumeSlider.style('width', '80px');
+        volumeSlider.parent(sliderContainer);
+    }
+    bgY1 = 0;
+    bgY2 = -height;
+    player = new Spaceship(bulletSound);
 
 }
 
@@ -108,8 +112,14 @@ function draw() {
     }
 
     if (gameStarted) {
-        backgroundMusic.setVolume(volumeSlider.value());
-        // bulletSound.setVolume(volumeSlider.value());
+        if (!isMobile() && volumeSlider) {
+            backgroundMusic.setVolume(volumeSlider.value());
+            // bulletSound.setVolume(volumeSlider.value());
+        } else {
+            // Set a default volume for mobile
+            backgroundMusic.setVolume(0.5);
+            // bulletSound.setVolume(0.5);
+        }
     }
 }
 
@@ -365,30 +375,39 @@ function keyPressed() {
 }
 
 function touchStarted() {
-    // This function will be called whenever the screen is touched or the mouse is clicked
-    // We can use it as a substitute for mousePressed()
-
-    // If the game has not started, start the game
-    if (!gameStarted) {
-        gameStarted = true;
+    if (touches[0].x >= 0 && touches[0].x < width && touches[0].y >= 0 && touches[0].y < height) {
+        if (!gameStarted) {
+            gameStarted = true;
+        } else {
+            player.fire();
+        }
     }
-    // If the game has started, fire a bullet
-    else {
-        player.fire();
-    }
+    return false;  // Prevent default behavior
 }
 
 function touchMoved() {
-    // This function will be called whenever the touch position changes
-    // We can use it as a substitute for mouseMoved()
-
-    // Move the player to the touch position
-    player.x = touchX;
-
-    // Prevent default behavior
-    return false;
+    if (touches[0].x >= 0 && touches[0].x < width && touches[0].y >= 0 && touches[0].y < height) {
+        if (gameStarted) {
+            player.x = touches[0].x;
+            player.x = constrain(player.x, 0, width - player.size);
+        }
+    }
+    return false;  // Prevent default behavior
 }
 
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+function windowResized() {
+    if (isMobile()) {
+        resizeCanvas(windowWidth, windowHeight);
+    } else {
+        let newWidth = min(windowWidth, 400);
+        let newHeight = min(windowHeight, newWidth * 2);
+        resizeCanvas(newWidth, newHeight);
+    }
+}
 
 class Spaceship {
     constructor(bulletSound) {

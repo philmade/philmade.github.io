@@ -32,7 +32,7 @@ function preload() {
     logo = loadImage('/images/spacevitae.png')
     instructions = loadImage('/images/instructions.png')
     bulletSound = loadSound('/images/laser.mp3');
-
+    backgroundMusic = loadSound('images/pulse.mp3');
 }
 
 
@@ -51,6 +51,23 @@ function setup() {
     canvas.parent('game');
     canvas.style('display', 'block');
     canvas.style('margin', 'auto');
+    // Create a container div for the slider and label
+    let sliderContainer = createDiv('');
+    sliderContainer.position(10, height - 40);
+    sliderContainer.style('display', 'flex');
+    sliderContainer.style('align-items', 'center');
+    sliderContainer.parent('game');
+
+    // Create and style the label
+    let volumeLabel = createSpan('Volume: ');
+    volumeLabel.style('color', 'white');
+    volumeLabel.style('margin-right', '10px');
+    volumeLabel.parent(sliderContainer);
+
+    // Create and style the slider
+    volumeSlider = createSlider(0, 1, 0.5, 0.1);
+    volumeSlider.style('width', '80px');
+    volumeSlider.parent(sliderContainer);
 
 }
 
@@ -74,40 +91,67 @@ function draw() {
     }
 
     // Draw the background images
-    image(gameImage, 0, bgY1, imgWidth, imgHeight);
-    image(gameImage, 0, bgY2, imgWidth, imgHeight);
+    if (gameStarted) {
+        image(gameImage, 0, bgY1, imgWidth, imgHeight);
+        image(gameImage, 0, bgY2, imgWidth, imgHeight);
+    } else {
+        image(bgImage, 0, 0, imgWidth, imgHeight);
+    }
 
     if (!gameStarted) {
-        // displayWinScreen()
-        loadScreen()
+        loadScreen();
     } else if (gameOver) {
-        // Display game over screen
         displayLoseScreen();
     } else {
         updateAndDisplaySpaceship();
         checkEndGameOrContinue();
     }
+
+    if (gameStarted) {
+        backgroundMusic.setVolume(volumeSlider.value());
+        // bulletSound.setVolume(volumeSlider.value());
+    }
 }
 
 
 function loadScreen() {
-    // Calculate the width and height to draw the image
     let imgWidth = width;
     let imgHeight = imgWidth * (bgImage.height / bgImage.width);
 
-    // Draw the image at the calculated size
     image(bgImage, 0, 0, imgWidth, imgHeight);
+    image(logo, width / 12, height / 3, 350, 60);
 
-    textSize(24);
     fill(255);
     textAlign(CENTER, CENTER);
-    image(logo, width / 12, height / 3, 350, 60);
-    image(instructions, width / 8, height / 1.2, 300, 50);
+    textSize(18);
+    text("Use arrow keys or mouse to move", width / 2, height / 1.5);
+    text("Space or click to shoot", width / 2, height / 1.4);
 
-    // text('Click then', width / 2, height / 1.2);
-    // text('press space or tap to start', width / 2, height / 1.2 + 50);
+    // Add start button
+    let buttonWidth = 200;
+    let buttonHeight = 50;
+    let buttonX = width / 2 - buttonWidth / 2;
+    let buttonY = height / 1.2;
 
+    fill(6, 182, 212);
+    rect(buttonX, buttonY, buttonWidth, buttonHeight, 25);
+    fill(255);
+    textSize(24);
+    text("Start Game", width / 2, height / 1.2 + buttonHeight / 2);
 
+    // Check if button is clicked
+    if (mouseIsPressed &&
+        mouseX > buttonX && mouseX < buttonX + buttonWidth &&
+        mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+        gameStarted = true;
+        startBackgroundMusic();
+    }
+}
+
+function startBackgroundMusic() {
+    if (backgroundMusic.isLoaded() && !backgroundMusic.isPlaying()) {
+        backgroundMusic.loop();
+    }
 }
 
 function updateAndDisplaySpaceship() {
@@ -190,11 +234,12 @@ function checkBulletHitsTextBlocks(i) {
 }
 
 function handleBulletHit(i, j) {
-    createExplosionParticles(i);
+    createExplosionParticlesAt(bullets[i].x, bullets[i].y, 20);
     bullets.splice(i, 1);
     score += round(random(1, 3));
     if (texts[j].hit()) {
         score += round(random(8, 36));
+        createExplosionParticlesAt(texts[j].x + texts[j].width / 2, texts[j].y + texts[j].height / 2, 50, color(255, 200, 0));
         texts.splice(j, 1);
     }
 }
@@ -207,7 +252,6 @@ function createExplosionParticles(i) {
 }
 
 function createExplosionParticlesAt(x, y, numParticles, particleColor) {
-    particles = [];
     for (let n = 0; n < numParticles; n++) {
         let p = new Particle(x, y, particleColor);
         particles.push(p);
@@ -294,8 +338,19 @@ function displayLoseScreen() {
 }
 
 function mousePressed() {
-    if (gameStarted) {
-        player.fire();
+    if (mouseX >= 0 && mouseX < width && mouseY >= 0 && mouseY < height) {
+        if (gameStarted) {
+            player.fire();
+        }
+    }
+}
+
+function mouseMoved() {
+    if (mouseX >= 0 && mouseX < width && mouseY >= 0 && mouseY < height) {
+        if (gameStarted) {
+            player.x = mouseX;
+            player.x = constrain(player.x, 0, width - player.size);
+        }
     }
 }
 
@@ -348,11 +403,13 @@ class Spaceship {
     }
 
     update() {
-        // Set spaceship's x-coordinate to mouse's x-coordinate
-        this.x = mouseX;
+        if (mouseX >= 0 && mouseX < width && mouseY >= 0 && mouseY < height) {
+            // Set spaceship's x-coordinate to mouse's x-coordinate
+            this.x = mouseX;
 
-        // Prevent spaceship from moving offscreen
-        this.x = constrain(this.x, 0, width - this.size);
+            // Prevent spaceship from moving offscreen
+            this.x = constrain(this.x, 0, width - this.size);
+        }
     }
 
     show() {
@@ -363,6 +420,7 @@ class Spaceship {
     fire() {
         let char = bulletChars[bulletIndex];
         bullets.push(new Bullet(this.x + this.spriteWidth / 2, this.y - this.spriteHeight / 2, char));
+        this.bulletSound.setVolume(0.2); // Adjust this value as needed (0.0 to 1.0)
         this.bulletSound.play();
         bulletIndex++;
         if (bulletIndex >= bulletChars.length) {
@@ -470,10 +528,14 @@ class Particle {
     constructor(x, y, particleColor) {
         this.x = x;
         this.y = y;
-        this.vx = random(-1, 1);
-        this.vy = random(-5, -1);
+        this.vx = random(-3, 3);
+        this.vy = random(-3, 3);
         this.alpha = 255;
-        this.color = particleColor || color(255);  // Use the provided color or default to white
+        this.color = particleColor || color(random(150, 255), random(0, 100), random(0, 100));
+        this.size = random(5, 15);
+        this.rotation = random(TWO_PI);
+        this.rotationSpeed = random(-0.1, 0.1);
+        this.shape = random(['circle', 'square', 'triangle']);
     }
 
     finished() {
@@ -484,12 +546,26 @@ class Particle {
         this.x += this.vx;
         this.y += this.vy;
         this.alpha -= 5;
+        this.rotation += this.rotationSpeed;
     }
 
     show() {
+        push();
+        translate(this.x, this.y);
+        rotate(this.rotation);
         noStroke();
-        fill(this.color, this.alpha);
-        ellipse(this.x, this.y, 16);
+        fill(red(this.color), green(this.color), blue(this.color), this.alpha);
+
+        if (this.shape === 'circle') {
+            ellipse(0, 0, this.size);
+        } else if (this.shape === 'square') {
+            rectMode(CENTER);
+            rect(0, 0, this.size, this.size);
+        } else if (this.shape === 'triangle') {
+            triangle(0, -this.size / 2, -this.size / 2, this.size / 2, this.size / 2, this.size / 2);
+        }
+
+        pop();
     }
 }
 

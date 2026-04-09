@@ -1,73 +1,735 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phil Harper - Portfolio</title>
-    <link href="/output.css" rel="stylesheet">
-    <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js">
-    </script>
-    <script src="cvgame.js"></script>
+    <title>Phil Harper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink: #0c0c0c;
+            --paper: #f4f1eb;
+            --paper-dark: #ebe6dc;
+            --accent: #c44b25;
+            --accent-soft: rgba(196, 75, 37, 0.08);
+            --muted: #7a7468;
+            --faint: rgba(12, 12, 12, 0.06);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Grain texture overlay */
+        body::after {
+            content: '';
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            padding: 16px clamp(20px, 4vw, 48px);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(244, 241, 235, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--faint);
+        }
+        nav .name { font-family: 'DM Mono', monospace; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+        nav .links { display: flex; gap: 24px; }
+        nav .links a {
+            font-family: 'DM Mono', monospace; font-size: 0.75rem;
+            text-decoration: none; color: var(--muted); letter-spacing: 0.04em; transition: color 0.2s;
+        }
+        nav .links a:hover { color: var(--accent); }
+
+        section { padding: clamp(80px, 12vh, 140px) clamp(20px, 6vw, 80px); }
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* HERO */
+        #hero {
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; align-items: flex-end;
+            padding-bottom: clamp(60px, 10vh, 120px); padding-top: 120px;
+            position: relative; overflow: hidden;
+            background: url('images/portfolio/hero.png') center center / cover no-repeat;
+        }
+        #hero::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(244, 241, 235, 0.88) 0%, rgba(244, 241, 235, 0.35) 45%, rgba(244, 241, 235, 0) 100%);
+        }
+        #hero::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.15;
+        }
+        #hero .container { position: relative; z-index: 1; }
+        #hero h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(3rem, 8vw, 6.5rem); font-weight: 900;
+            line-height: 1; letter-spacing: -0.04em; margin-bottom: 28px;
+            white-space: nowrap; color: var(--ink);
+            text-shadow: 0 2px 20px rgba(244, 241, 235, 0.6);
+        }
+        #hero .intro {
+            text-shadow: 0 1px 8px rgba(244, 241, 235, 0.8);
+        }
+        #hero .intro {
+            font-size: clamp(1rem, 2vw, 1.15rem); color: var(--muted);
+            max-width: 540px; line-height: 1.8;
+        }
+        #hero h1 {
+            opacity: 0; transform: translateY(16px);
+            animation: heroIn 0.8s ease 0.2s forwards;
+        }
+        #hero .intro {
+            opacity: 0; transform: translateY(12px);
+            animation: heroIn 0.8s ease 0.5s forwards;
+        }
+        @keyframes heroIn { to { opacity: 1; transform: translateY(0); } }
+
+        .scroll-hint {
+            position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+            font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted);
+            letter-spacing: 0.1em; animation: bob 2s ease infinite;
+        }
+        @keyframes bob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+        /* SECTION HEADERS */
+        .section-label {
+            font-family: 'DM Mono', monospace; font-size: 0.7rem;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--accent); margin-bottom: 12px;
+        }
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700;
+            letter-spacing: -0.03em; margin-bottom: 40px; line-height: 1.1;
+        }
+
+        /* PROJECT CARDS — STORY */
+        .story-grid {
+            display: grid; gap: 32px;
+        }
+        .story-card {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+            background: var(--paper-dark); border-radius: 12px;
+            overflow: hidden; border: 1px solid var(--faint);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .story-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+        }
+        .story-card:nth-child(even) { direction: rtl; }
+        .story-card:nth-child(even) > * { direction: ltr; }
+        .story-card .card-image {
+            aspect-ratio: 4/3; background: var(--paper);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; position: relative;
+        }
+        .story-card .card-image img { width: 100%; height: 100%; object-fit: cover; }
+        .story-card .card-image .placeholder {
+            font-family: 'DM Mono', monospace; font-size: 0.6rem;
+            color: var(--muted); text-align: center; padding: 20px;
+            letter-spacing: 0.04em; line-height: 1.6;
+        }
+        .story-card .card-body { padding: clamp(24px, 3vw, 40px); display: flex; flex-direction: column; justify-content: center; }
+        .story-card .card-year {
+            font-family: 'DM Mono', monospace; font-size: 0.65rem;
+            color: var(--accent); letter-spacing: 0.06em; margin-bottom: 8px;
+        }
+        .story-card h3 {
+            font-family: 'Outfit', sans-serif; font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+            font-weight: 700; margin-bottom: 10px; line-height: 1.25;
+        }
+        .story-card .card-desc {
+            font-size: 0.9rem; color: var(--muted); line-height: 1.7; margin-bottom: 16px;
+        }
+        .story-card .card-tags {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto;
+        }
+        .story-card .card-tag {
+            font-family: 'DM Mono', monospace; font-size: 0.6rem;
+            color: var(--accent); letter-spacing: 0.04em;
+            padding: 3px 10px; border: 1px solid var(--accent); border-radius: 100px;
+        }
+
+        /* PROJECT CARDS — CODE */
+        .code-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
+        }
+        .code-card {
+            background: var(--ink); color: var(--paper); border-radius: 12px;
+            padding: 32px; position: relative; overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .code-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .code-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 2px; background: linear-gradient(90deg, var(--accent), transparent);
+        }
+        .code-card .card-lang {
+            font-family: 'DM Mono', monospace; font-size: 0.6rem;
+            color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .code-card h3 {
+            font-family: 'Outfit', sans-serif; font-size: 1.1rem;
+            font-weight: 600; margin-bottom: 10px; color: var(--paper);
+        }
+        .code-card .card-desc {
+            font-size: 0.88rem; color: rgba(244, 241, 235, 0.55);
+            line-height: 1.65;
+        }
+        .code-intro {
+            font-size: 1rem; color: rgba(244, 241, 235, 0.5);
+            max-width: 700px; line-height: 1.8; margin-bottom: 32px;
+        }
+
+        /* Filter bar */
+        .filter-bar { margin-bottom: 32px; }
+        .filter-label {
+            font-family: 'DM Mono', monospace; font-size: 0.65rem;
+            color: rgba(244, 241, 235, 0.3); letter-spacing: 0.06em;
+            text-transform: uppercase; display: block; margin-bottom: 12px;
+        }
+        .filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-tag {
+            font-family: 'DM Mono', monospace; font-size: 0.68rem;
+            color: rgba(244, 241, 235, 0.45); letter-spacing: 0.03em;
+            padding: 6px 14px; border: 1px solid rgba(244, 241, 235, 0.12); border-radius: 100px;
+            cursor: pointer; transition: all 0.2s; background: transparent;
+            user-select: none;
+        }
+        .filter-tag:hover { color: rgba(244, 241, 235, 0.7); border-color: rgba(244, 241, 235, 0.25); }
+        .filter-tag.active {
+            color: var(--accent); border-color: var(--accent);
+            background: rgba(196, 75, 37, 0.12);
+        }
+
+        /* Code card tags */
+        .code-tags { display: flex; gap: 6px; flex-wrap: nowrap; margin-bottom: 12px; overflow: hidden; }
+        .code-tag {
+            font-family: 'DM Mono', monospace; font-size: 0.58rem;
+            color: var(--accent); letter-spacing: 0.04em;
+            padding: 3px 8px; border: 1px solid rgba(196, 75, 37, 0.3); border-radius: 4px;
+            cursor: default; transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+        }
+        .code-tag:hover { border-color: var(--accent); background: rgba(196, 75, 37, 0.1); }
+        .code-tag.highlight { background: rgba(196, 75, 37, 0.2); border-color: var(--accent); }
+
+        /* Card filter animation */
+        .code-card {
+            transition: transform 0.4s ease, box-shadow 0.3s ease, opacity 0.35s ease;
+        }
+        .code-card.hidden {
+            opacity: 0; transform: scale(0.9); pointer-events: none;
+            position: absolute; width: 0; height: 0; overflow: hidden;
+            padding: 0; margin: 0; border: none;
+        }
+
+        /* Reset button */
+        .filter-reset {
+            font-family: 'DM Mono', monospace; font-size: 0.65rem;
+            color: rgba(244, 241, 235, 0.4); letter-spacing: 0.03em;
+            padding: 6px 14px; border: 1px solid rgba(244, 241, 235, 0.1); border-radius: 100px;
+            cursor: pointer; transition: all 0.2s; background: transparent;
+            display: none;
+        }
+        .filter-reset:hover { color: var(--paper); border-color: rgba(244, 241, 235, 0.3); }
+        .filter-reset.visible { display: inline-block; }
+
+        .code-card .card-image {
+            aspect-ratio: 1/1; margin-top: 20px; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .code-card .card-image img {
+            width: 100%; height: 100%; object-fit: contain;
+        }
+        .code-card .card-image .placeholder {
+            font-family: 'DM Mono', monospace; font-size: 0.55rem;
+            color: rgba(244,241,235,0.25); text-align: center; padding: 12px;
+        }
+
+        /* SHOWREEL */
+        .showreel { margin-bottom: 48px; }
+        .showreel-embed {
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+            border-radius: 12px; background: #000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+        .showreel-embed iframe {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .showreel-caption {
+            font-family: 'DM Mono', monospace; font-size: 0.68rem;
+            color: var(--muted); letter-spacing: 0.04em; margin-top: 12px; text-align: center;
+        }
+
+        /* CONTACT */
+        #contact { text-align: center; border-top: 1px solid var(--faint); }
+        #contact h2 { font-family: 'Outfit', sans-serif; font-size: clamp(1.6rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: 8px; }
+        #contact p { color: var(--muted); max-width: 400px; margin: 0 auto 28px; }
+        .contact-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .contact-links a {
+            font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--ink);
+            text-decoration: none; padding: 12px 28px; border: 1px solid var(--ink);
+            border-radius: 100px; transition: all 0.2s; letter-spacing: 0.02em;
+        }
+        .contact-links a:hover { background: var(--ink); color: var(--paper); }
+        .contact-links a.accent { background: var(--accent); border-color: var(--accent); color: white; }
+        .contact-links a.accent:hover { background: #d4562f; }
+
+        footer {
+            text-align: center; padding: 28px 24px;
+            font-family: 'DM Mono', monospace; font-size: 0.68rem;
+            color: var(--muted); border-top: 1px solid var(--faint);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .story-card { grid-template-columns: 1fr; }
+            .story-card:nth-child(even) { direction: ltr; }
+            .code-grid { grid-template-columns: 1fr; }
+            nav .links { gap: 14px; }
+        }
+
+        /* REVEAL */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+    </style>
 </head>
+<body>
 
-<body class="text-white bg-black">
-
-    <!-- Header -->
-    <header
-        class="flex flex-row w-full justify-between py-6 text-center text-5xl font-extralight text-white xl:w-1/4 mx-auto">
-        <div class="px-4">PHIL HARPER</div>
-        <button class="rounded bg-gray-900 px-4 py-2 font-bold text-white hover:bg-gray-800" _="
-                    on click toggle .hidden on #nav-menu">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="h-6 w-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-        </button>
-    </header>
-
-    <!-- Navigation -->
-    <nav id="nav-menu" class="hidden text-center text-white font-light mb-10">
-        <ul class="mt-4 flex flex-col space-y-4 mx-auto">
-            <li><a href="#film" class=" hover:text-purple-300">More soon....</a></li>
-            <!-- <li><a href="#journalism" class=" hover:text-purple-300">Journalism</a></li>
-                <li><a href="#books" class=" hover:text-purple-300">Books</a></li>
-                <li><a href="#podcasts" class=" hover:text-purple-300">Podcasts</a></li>
-                <li><a href="#vr" class=" hover:text-purple-300">Virtual Reality</a></li>
-                <li><a href="#ai" class=" hover:text-purple-300">AI</a></li> -->
-        </ul>
+    <nav>
+        <div class="name">Phil Harper</div>
+        <div class="links">
+            <a href="#story">Story</a>
+            <a href="#code">Code</a>
+            <a href="#contact">Contact</a>
+        </div>
     </nav>
 
-    <!-- Content sections -->
-    <div id="sections" class="text-2xl font-light text-center mb-10">
-        <section class="py-10">
-            <div class="flex flex-col items-center w-5/6 md:w-1/3 xl:w-1/4 mx-auto" id="film">
-                <p class="text-sm font-extralight">A BAFTA award-winning creative technologist with over 10 years of
-                    experience at the intersection of storytelling, technology and audience engagement. Skilled in
-                    directing and producing award-winning virtual reality, digital, and immersive content
-                    across multiple platforms. Self-taught and fluent in Python programming with a focus on experimental
-                    AI and data-led storytelling projects. Highly proficient in Premier Pro, Mistika VR and
-                    InstaPro360 software.</p>
-                <button id="startGameButton" class="mt-4 px-4 py-2 bg-cyan-500 text-white rounded-full">Start
-                    Game</button>
-            </div>
-        </section>
-        <div id="gameContainer">
-            <div id="game"></div>
-            <button id="exitGameButton" class="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white rounded-full">Exit
-                Game</button>
-            <button id="fullscreenButton"
-                class="absolute bottom-4 right-4 px-4 py-2 bg-blue-500 text-white rounded-full hidden">Full
-                Screen</button>
+    <!-- HERO -->
+    <section id="hero">
+        <div class="container">
+            <h1>Phil Harper</h1>
+            <p class="intro">BAFTA-winning VR director turned self-taught engineer. I've filmed with Attenborough, built AI agent platforms in Go and Python, and now write investigative journalism powered by the tools I build. The code serves the story. The story drives the code.</p>
         </div>
-        <section class="py-4">
-            <a href="/phil-harper-cv.pdf" download
-                class="inline-flex items-center px-4 py-2 border border-transparent font-medium text-lg rounded-full shadow-sm text-white bg-cyan-500 hover:bg-cyan-600">
-                Get my CV
-            </a>
-        </section>
-    </div>
-    <script>window.addEventListener('load', initializeGameControls);</script>
+        <div class="scroll-hint">scroll ↓</div>
+    </section>
+
+    <!-- ========== STORY ========== -->
+    <section id="story">
+        <div class="container">
+            <div class="section-label">01 — Story</div>
+            <div class="section-title">Film, VR &amp; Journalism</div>
+
+            <!-- Showreel -->
+            <div class="showreel reveal">
+                <div class="showreel-embed">
+                    <iframe src="https://www.youtube.com/embed/A3r2mJpWnfc?rel=0&modestbranding=1" title="Phil Harper — Showreel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="showreel-caption">Showreel — selected documentary and VR work</div>
+            </div>
+
+            <div class="story-grid">
+
+                <!-- Truthloader -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <img src="images/portfolio/truthloader-cropped.png" alt="Truthloader — citizen journalism YouTube channel">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2012 — 2015 · ITN Productions</div>
+                        <h3>Truthloader</h3>
+                        <div class="card-desc">YouTube channel verifying citizen journalism during the Arab Spring. Grew to 600,000 subscribers in twelve months. Hosted, investigated, and edited. The "Reddit for Sale" sting — buying the top spot on Reddit for $200 — was cited in academic research on digital propaganda years before "fake news" entered the mainstream.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">600K Subscribers</span>
+                            <span class="card-tag">OSINT</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- First Life VR -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <img src="images/portfolio/first-life-vr.webp" alt="First Life VR — Cambrian ocean CGI creature">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2015 — 2016 · Atlantic Productions</div>
+                        <h3>First Life VR</h3>
+                        <div class="card-desc">Writer and producer on a VR experience narrated by Sir David Attenborough, visualising the Cambrian ocean 540 million years ago. High-fidelity CGI reconstruction of Anomalocaris, Hallucigenia, and other early life — built from Natural History Museum fossil records. Exhibited at the NHM.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">NHM Exhibit</span>
+                            <span class="card-tag">Attenborough</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attenborough Great Barrier Reef -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <img src="images/portfolio/reef-hero.jpg" alt="David Attenborough on the Great Barrier Reef — split underwater view">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2016 — 2017 · Atlantic Productions</div>
+                        <h3>David Attenborough's Great Barrier Reef VR</h3>
+                        <div class="card-desc">Co-directed a VR film with Sir David Attenborough. 360-degree stereoscopic footage from a Triton submersible, custom underwater rigs, and a mantis shrimp UV vision simulation. Became a permanent exhibit at the Natural History Museum. Won a BAFTA for Digital Creativity.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">BAFTA Winner</span>
+                            <span class="card-tag">NHM Exhibit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Damming the Nile -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <img src="images/portfolio/damming-the-nile-2.jpg" alt="Damming the Nile — BBC News VR Series" style="object-fit: contain; background: #2a3a2a;">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2017 — 2018 · BBC VR Hub</div>
+                        <h3>Damming the Nile</h3>
+                        <div class="card-desc">Directed and produced a VR documentary on the Grand Ethiopian Renaissance Dam for the BBC. Filmed across Sudan, Egypt, and Ethiopia. Pioneered "embodied presence" in VR journalism — in one scene, the correspondent pours the viewer a glass of water, the very resource being fought over. Won the Rose d'Or.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">Rose d'Or 2018</span>
+                            <span class="card-tag">BBC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Congo VR -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <img src="images/portfolio/congo-expo.jpg" alt="Congo VR — BBC documentary series" style="object-fit: contain; background: #2a3a2a;">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2018 — 2019 · BBC VR Hub</div>
+                        <h3>Congo VR</h3>
+                        <div class="card-desc">Directed and produced a three-part VR series across the Democratic Republic of Congo — "Great Riches", "War and Disease", "A Troubled Past". Filmed in Kinshasa, the rainforest, and on the river. Used 360-degree format to convey the immensity of the Congo River and the density of the rainforest. Cross-platform release: VR, TV documentary, and long-form audio.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">3-Part Series</span>
+                            <span class="card-tag">BBC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1943 Berlin Blitz -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <img src="images/portfolio/berlin-blitz.jpg" alt="1943 Berlin Blitz — Lancaster bomber VR experience" style="object-fit: contain; background: #1a0a0a;">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2018 — 2019 · BBC VR Hub</div>
+                        <h3>1943 Berlin Blitz</h3>
+                        <div class="card-desc">Directed a 6DoF CGI experience placing viewers inside a Lancaster bomber during a night raid over Berlin, synchronised to an authentic 1943 BBC audio recording by correspondent Wynford Vaughan-Thomas. Audiences instinctively ducked at flak. Won Best VR at the Broadcast Digital Awards.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">Broadcast Digital Award</span>
+                            <span class="card-tag">6DoF</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The Antarctica Experience -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <img src="images/portfolio/antarctica-2.webp" alt="The Antarctica Experience — glacier drone shot">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2018 — 2019 · White Spark Pictures</div>
+                        <h3>The Antarctica Experience</h3>
+                        <div class="card-desc">Co-directed, wrote, and shot a VR documentary at Australia's Davis Station. Narrated by David Wenham. Drone cinematography of glaciers, ground-level penguin colony shots, helicopter flybys. Grossed over $1 million at museum box offices across Australia — one of the top 10 highest-grossing Australian documentaries.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">$1M+ Box Office</span>
+                            <span class="card-tag">Top 10 Aus Doc</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Realities (Lenovo) -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <img src="images/portfolio/new-realities-posters.jpg" alt="New Realities — Lenovo VR film series" style="object-fit: contain; background: #111;">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2018 — 2019 · Lenovo</div>
+                        <h3>New Realities</h3>
+                        <div class="card-desc">Produced VR films for Lenovo across three countries, bringing immersive storytelling to a commercial audience at global scale. Commercial work demonstrating that the techniques developed in documentary VR could translate to brand storytelling.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">Commercial</span>
+                            <span class="card-tag">Global</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The Digger -->
+                <div class="story-card reveal">
+                    <div class="card-image">
+                        <video autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: contain; background: #000;">
+                            <source src="images/portfolio/digger-animated.mp4" type="video/mp4">
+                            <img src="images/portfolio/digger-wide.webp" alt="The Digger logo">
+                        </video>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-year">2024 — Now</div>
+                        <h3>The Digger</h3>
+                        <div class="card-desc">Investigative Substack using data, code, and forensic analysis to examine things the mainstream doesn't question. The aluminium adjuvant investigation used the FDA's own models against them. The White House plagiarism analysis traced a think-tank report repackaged as presidential policy. 16,000+ subscribers.</div>
+                        <div class="card-tags">
+                            <span class="card-tag">16K Subscribers</span>
+                            <span class="card-tag">Investigative</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== CODE ========== -->
+    <section id="code" style="background: var(--ink); color: var(--paper);">
+        <div class="container">
+            <div class="section-label" style="color: var(--accent);">02 — Code</div>
+            <div class="section-title" style="color: var(--paper);">Software &amp; AI</div>
+
+            <p class="code-intro reveal">Self-taught full-stack engineer building AI agent systems, real-time platforms, and production SaaS. I work across Go, Python, and modern JS frameworks — building backends that handle WebSockets at scale, AI agent orchestration with multi-model pipelines, and containerised deployments. Everything ships.</p>
+
+            <div class="filter-bar reveal">
+                <span class="filter-label">Filter by technology:</span>
+                <div class="filter-tags" id="filterTags">
+                    <button class="filter-reset" id="filterReset">Show all</button>
+                </div>
+            </div>
+
+            <div class="code-grid" id="codeGrid">
+
+                <!-- Gather.is -->
+                <div class="code-card reveal" data-tags="go,websockets,solidjs,python,adk,multi-agent">
+                    <div class="code-tags">
+                        <span class="code-tag">Go</span>
+                        <span class="code-tag">WebSockets</span>
+                        <span class="code-tag">SolidJS</span>
+                        <span class="code-tag">Python</span>
+                        <span class="code-tag">ADK</span>
+                        <span class="code-tag">Multi-Agent</span>
+                    </div>
+                    <h3>gather.is</h3>
+                    <div class="card-desc">AI micro-agent social network. Go backend with WebSockets for real-time communication, Svelte/TypeScript frontend, SQLite with LiteStream replication. One-line Python SDK for deploying agents — removes the DevOps friction from AI development.</div>
+                    <div class="card-image">
+                        <img src="images/portfolio/gather-logo.png" alt="gather.is logo">
+                    </div>
+                </div>
+
+                <!-- RobAI -->
+                <div class="code-card reveal" data-tags="python,openai,claude">
+                    <div class="code-tags">
+                        <span class="code-tag">Python</span>
+                        <span class="code-tag">OpenAI</span>
+                        <span class="code-tag">Claude</span>
+                    </div>
+                    <h3>RobAI</h3>
+                    <div class="card-desc">Custom AI agent framework built on the principle that code controlling LLMs should be as close to human language as possible. Minimal abstraction, full visibility of data flow. Built because LangChain was too abstract — clarity and maintainability over cleverness.</div>
+                    <div class="card-image">
+                        <img src="images/portfolio/robai.png" alt="RobAI logo">
+                    </div>
+                </div>
+
+                <!-- ren.house -->
+                <div class="code-card reveal" data-tags="solidjs,pocketbase,go,docker">
+                    <div class="code-tags">
+                        <span class="code-tag">SolidJS</span>
+                        <span class="code-tag">PocketBase</span>
+                        <span class="code-tag">Go</span>
+                        <span class="code-tag">Docker</span>
+                    </div>
+                    <h3>ren.house</h3>
+                    <div class="card-desc">AI property staging SaaS. Transform property images with AI vision models. Full-stack platform — SolidJS frontend, Go backend, SQLite database. Multi-tenant auth, image transformation pipeline. Deployed to production and serving real users.</div>
+                    <div class="card-image">
+                        <img src="images/portfolio/renhouse.svg" alt="ren.house logo" style="background: #fff; padding: 20px; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <!-- Clay -->
+                <div class="code-card reveal" data-tags="adk,go,python,docker,alpine-linux">
+                    <div class="code-tags">
+                        <span class="code-tag">ADK</span>
+                        <span class="code-tag">Go</span>
+                        <span class="code-tag">Python</span>
+                        <span class="code-tag">Docker</span>
+                        <span class="code-tag">Alpine Linux</span>
+                    </div>
+                    <h3>Clay</h3>
+                    <div class="card-desc">Autonomous AI agent container built on Google ADK. Runs in Alpine Linux with persistent memory, self-modification capabilities, and multi-channel web presence. An agent that can maintain and extend itself.</div>
+                    <div class="card-image">
+                        <img src="images/portfolio/clay.png" alt="Clay — autonomous AI agent characters">
+                    </div>
+                </div>
+
+                <!-- Case.Science -->
+                <div class="code-card reveal" data-tags="robai,rag,grobid,docker,multi-agent">
+                    <div class="code-tags">
+                        <span class="code-tag">RobAI</span>
+                        <span class="code-tag">RAG</span>
+                        <span class="code-tag">Grobid</span>
+                        <span class="code-tag">Docker</span>
+                        <span class="code-tag">Multi-Agent</span>
+                    </div>
+                    <h3>case.science</h3>
+                    <div class="card-desc">Multi-agent debate platform using RAG. AI agents debate complex science topics with argument tracking and state management. A testbed for multi-agent orchestration — synthetic agents verifying facts instead of hallucinating fiction.</div>
+                    <div class="card-image">
+                        <img src="images/portfolio/case-science.png" alt="case.science">
+                    </div>
+                </div>
+
+                <!-- philmade -->
+                <div class="code-card reveal">
+                    <div class="card-lang"><a href="https://github.com/philmade" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">github.com/philmade</a></div>
+                    <h3>philmade</h3>
+                    <div class="card-desc">All of the above and more. Open source agent frameworks, AI tools, web scrapers, and experiments. The workshop where the code gets built.</div>
+                    <div class="card-image">
+                        <svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg" style="width: 60%; height: 60%; opacity: 0.15;"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="currentColor"/></svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+        <div class="container reveal">
+            <h2>Let's talk.</h2>
+            <p>Whether it's a role, a collaboration, or a story worth investigating.</p>
+            <div class="contact-links">
+                <a href="/phil-harper-cv.pdf" class="accent" download>Download CV</a>
+                <a href="https://github.com/philmade">GitHub</a>
+                <a href="https://substack.com/@philharper">The Digger</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>Phil Harper · 2026 · New Mills, Derbyshire</footer>
+
+    <script>
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+        // ===== Tag filtering =====
+        (function() {
+            const grid = document.getElementById('codeGrid');
+            const cards = [...document.querySelectorAll('#codeGrid .code-card[data-tags]')];
+            const philmadeCard = document.querySelector('#codeGrid .code-card:not([data-tags])');
+            const filterContainer = document.getElementById('filterTags');
+            const resetBtn = document.getElementById('filterReset');
+            const allTags = new Map();
+
+            cards.forEach(card => {
+                const tags = card.dataset.tags.split(',');
+                card.querySelectorAll('.code-tag').forEach((el, i) => {
+                    if (tags[i]) allTags.set(tags[i].trim(), el.textContent.trim());
+                });
+            });
+
+            const sorted = [...allTags.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+
+            sorted.forEach(([key, label]) => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-tag';
+                btn.textContent = label;
+                btn.dataset.tag = key;
+                btn.addEventListener('click', () => toggleFilter(btn));
+                filterContainer.insertBefore(btn, resetBtn);
+            });
+
+            resetBtn.addEventListener('click', resetFilters);
+
+            let activeFilters = new Set();
+
+            function toggleFilter(btn) {
+                const tag = btn.dataset.tag;
+                if (activeFilters.has(tag)) {
+                    activeFilters.delete(tag);
+                    btn.classList.remove('active');
+                } else {
+                    activeFilters.add(tag);
+                    btn.classList.add('active');
+                }
+                applyFilters();
+            }
+
+            function resetFilters() {
+                activeFilters.clear();
+                filterContainer.querySelectorAll('.filter-tag').forEach(b => b.classList.remove('active'));
+                applyFilters();
+            }
+
+            function applyFilters() {
+                resetBtn.classList.toggle('visible', activeFilters.size > 0);
+
+                if (activeFilters.size === 0) {
+                    cards.forEach(card => {
+                        card.classList.remove('hidden');
+                        card.querySelectorAll('.code-tag').forEach(t => t.classList.remove('highlight'));
+                    });
+                    if (philmadeCard) philmadeCard.classList.remove('hidden');
+                    return;
+                }
+
+                // Score cards by number of matching tags, then reorder
+                const scored = cards.map(card => {
+                    const cardTags = card.dataset.tags.split(',').map(t => t.trim());
+                    const matchCount = cardTags.filter(t => activeFilters.has(t)).length;
+                    return { card, matchCount, cardTags };
+                });
+
+                // Sort: matched first (by match count desc), then unmatched
+                scored.sort((a, b) => b.matchCount - a.matchCount);
+
+                // Reorder DOM and toggle visibility
+                scored.forEach(({ card, matchCount, cardTags }) => {
+                    grid.appendChild(card);
+
+                    if (matchCount > 0) {
+                        card.classList.remove('hidden');
+                        card.querySelectorAll('.code-tag').forEach(el => {
+                            const tagText = el.textContent.trim();
+                            const tagKey = [...allTags.entries()].find(([k, v]) => v === tagText);
+                            el.classList.toggle('highlight', !!(tagKey && activeFilters.has(tagKey[0])));
+                        });
+                    } else {
+                        card.classList.add('hidden');
+                        card.querySelectorAll('.code-tag').forEach(t => t.classList.remove('highlight'));
+                    }
+                });
+
+                // philmade card always at end, hidden when filtering
+                if (philmadeCard) {
+                    grid.appendChild(philmadeCard);
+                    philmadeCard.classList.add('hidden');
+                }
+            }
+        })();
+
+    </script>
 </body>
+</html>
